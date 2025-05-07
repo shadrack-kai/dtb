@@ -1,0 +1,1 @@
+INSERT INTO users (id, unique_id, email, password, role) VALUES (1, 'b5025826-dbe4-4002-b424-9b3b12ccee56', 'test-admin@gmail.com', '$2a$10$b8qv4QydgpSoQdRQi.YAy.1K.zTT/aNPSGANzy1b08vj7KuzZE9iG','ADMIN');
