@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq/lib/:/var/lib/rabbitmq/
+      - ./rabbitmq/log/:/var/log/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    restart: on-failure
+    networks:
+      - app-net
+
+  profile-service:
+    build:
+      context: ./profile-service
+    image: profile-service:latest
+    container_name: profile-service
+    ports:
+      - 8080:8080
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - app-net
+
+  account-service:
+    build:
+      context: ./account-service
+    image: account-service:latest
+    container_name: account-service
+    ports:
+      - 8081:8080
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - PROFILE_HOST=profile-service
+    networks:
+      - app-net
+
+  payment-service:
+    build:
+      context: ./payment-service
+    image: payment-service:latest
+    container_name: payment-service
+    ports:
+      - 8082:8080
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - ACCOUNT_HOST=account-service
+      - ACCOUNT_PORT=8080
+    networks:
+      - app-net
+
+  events-service:
+    build:
+      context: ./events-service
+    image: events-service:latest
+    container_name: events-service
+    ports:
+      - 8083:8080
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge
